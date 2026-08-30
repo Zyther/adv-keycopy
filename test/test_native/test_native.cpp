@@ -4,6 +4,7 @@
 #include "key_formats.h"
 #include "key_geometry.h"
 #include "keycopy_io.h"
+#include "view_math.h"
 
 static void fill_kw1_min(uint8_t* d) {
     for (int i = 0; i < 6; i++) d[i] = 1;
@@ -170,6 +171,44 @@ void test_settings_ini_rejects_non_positive(void) {
     TEST_ASSERT_FALSE(parse_settings_ini("nope\n", &p));
 }
 
+void test_inch_to_px_default_pitch(void) {
+    TEST_ASSERT_EQUAL_INT(0, inch_to_px(0.0, DEFAULT_INCHES_PER_PX));
+    TEST_ASSERT_EQUAL_INT(60, inch_to_px(0.2484, DEFAULT_INCHES_PER_PX));
+}
+
+void test_world_to_screen_subtracts_pan(void) {
+    Pixel p = world_to_screen(0.2484, 0.0, DEFAULT_INCHES_PER_PX, 0, 20, 10, 0);
+    TEST_ASSERT_EQUAL_INT(50, p.x);
+    TEST_ASSERT_EQUAL_INT(20, p.y);
+}
+
+void test_clamp_pan_long_key(void) {
+    int pan_x = 5000;
+    int pan_y = 0;
+    clamp_pan(&pan_x, &pan_y, 0, 300, 0, 80, 240, 135);
+    TEST_ASSERT_EQUAL_INT(60, pan_x);
+}
+
+void test_autopan_brings_pin_on_screen(void) {
+    int pan_x = 0;
+    int pan_y = 0;
+    autopan_to_pin(280, 40, &pan_x, &pan_y, 240, 135, 16);
+    Pixel shown = {280 - pan_x, 40 - pan_y};
+    TEST_ASSERT_TRUE(shown.x >= 16 && shown.x <= 240 - 16);
+}
+
+void test_measure_keys(void) {
+    TEST_ASSERT_EQUAL_INT(MeasureAction_PinPrev, measure_input_from_char(',').action);
+    TEST_ASSERT_EQUAL_INT(MeasureAction_PinNext, measure_input_from_char('.').action);
+    TEST_ASSERT_EQUAL_INT(MeasureAction_Shallower, measure_input_from_char(';').action);
+    TEST_ASSERT_EQUAL_INT(MeasureAction_Deeper, measure_input_from_char('/').action);
+    MeasureInput s = measure_input_from_char('3');
+    TEST_ASSERT_EQUAL_INT(MeasureAction_SetDepth, s.action);
+    TEST_ASSERT_EQUAL_UINT8(3, s.digit);
+    TEST_ASSERT_EQUAL_INT(MeasureAction_PanLeft, measure_input_from_char('-').action);
+    TEST_ASSERT_EQUAL_INT(MeasureAction_Back, measure_input_from_char('`').action);
+}
+
 void test_h75_has_bottom_edge(void) {
     int hi = find_format_by_name("H75");
     uint8_t d[16];
@@ -210,5 +249,10 @@ int main(int argc, char** argv) {
     RUN_TEST(test_keycopy_name_rules);
     RUN_TEST(test_settings_ini_round_trip);
     RUN_TEST(test_settings_ini_rejects_non_positive);
+    RUN_TEST(test_inch_to_px_default_pitch);
+    RUN_TEST(test_world_to_screen_subtracts_pan);
+    RUN_TEST(test_clamp_pan_long_key);
+    RUN_TEST(test_autopan_brings_pin_on_screen);
+    RUN_TEST(test_measure_keys);
     return UNITY_END();
 }
