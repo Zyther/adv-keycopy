@@ -1,7 +1,9 @@
 #include <unity.h>
 #include <math.h>
+#include <string.h>
 #include "key_formats.h"
 #include "key_geometry.h"
+#include "keycopy_io.h"
 
 static void fill_kw1_min(uint8_t* d) {
     for (int i = 0; i < 6; i++) d[i] = 1;
@@ -109,6 +111,65 @@ void test_kw1_shoulder_and_elbow(void) {
     TEST_ASSERT_TRUE(count_near(segs, n, level, 0.329, level + 0.15, 0.329 - 0.15) >= 1);
 }
 
+void test_keycopy_round_trip_kw1(void) {
+    uint8_t in[5] = {1, 2, 3, 4, 5};
+    char buf[512];
+    TEST_ASSERT_TRUE(keycopy_serialize(all_formats[0], in, buf, sizeof(buf)));
+    TEST_ASSERT_NOT_NULL(strstr(buf, "Filetype: Flipper Key Copier File"));
+    TEST_ASSERT_NOT_NULL(strstr(buf, "Format Name: KW1"));
+    TEST_ASSERT_NOT_NULL(strstr(buf, "Bitting Pattern: 1-2-3-4-5"));
+    int idx = -1;
+    uint8_t out[8] = {0};
+    TEST_ASSERT_TRUE(keycopy_parse(buf, &idx, out, 8));
+    TEST_ASSERT_EQUAL_INT(0, idx);
+    TEST_ASSERT_EQUAL_UINT8(1, out[0]);
+    TEST_ASSERT_EQUAL_UINT8(5, out[4]);
+}
+
+void test_keycopy_rejects_unknown_format(void) {
+    const char* t =
+        "Filetype: Flipper Key Copier File\n"
+        "Version: 1\n"
+        "Format Name: NOPE\n"
+        "Bitting Pattern: 1-2-3-4-5\n";
+    int idx = 99;
+    uint8_t out[8] = {9, 9, 9, 9, 9, 9, 9, 9};
+    TEST_ASSERT_FALSE(keycopy_parse(t, &idx, out, 8));
+    TEST_ASSERT_EQUAL_INT(99, idx);
+    TEST_ASSERT_EQUAL_UINT8(9, out[0]);
+}
+
+void test_keycopy_rejects_short_bitting(void) {
+    const char* t = "Format Name: KW1\nBitting Pattern: 1-2-3\n";
+    int idx = 0;
+    uint8_t out[8] = {0};
+    TEST_ASSERT_FALSE(keycopy_parse(t, &idx, out, 8));
+}
+
+void test_keycopy_name_rules(void) {
+    TEST_ASSERT_TRUE(keycopy_name_ok("house"));
+    TEST_ASSERT_FALSE(keycopy_name_ok(""));
+    TEST_ASSERT_FALSE(keycopy_name_ok("."));
+    TEST_ASSERT_FALSE(keycopy_name_ok(".."));
+    TEST_ASSERT_FALSE(keycopy_name_ok("a/b"));
+    TEST_ASSERT_FALSE(keycopy_name_ok("a:b"));
+}
+
+void test_settings_ini_round_trip(void) {
+    char buf[64];
+    TEST_ASSERT_TRUE(format_settings_ini(0.004140, buf, sizeof(buf)) > 0);
+    TEST_ASSERT_NOT_NULL(strstr(buf, "inches_per_px=0.004140"));
+    double p = 0;
+    TEST_ASSERT_TRUE(parse_settings_ini(buf, &p));
+    TEST_ASSERT_DOUBLE_WITHIN(0.0000001, 0.004140, p);
+}
+
+void test_settings_ini_rejects_non_positive(void) {
+    double p = 1;
+    TEST_ASSERT_FALSE(parse_settings_ini("inches_per_px=0\n", &p));
+    TEST_ASSERT_FALSE(parse_settings_ini("nope\n", &p));
+}
+
 void test_h75_has_bottom_edge(void) {
     int hi = find_format_by_name("H75");
     uint8_t d[16];
@@ -143,5 +204,11 @@ int main(int argc, char** argv) {
     RUN_TEST(test_pin_centers_kw1_sc4);
     RUN_TEST(test_kw1_shoulder_and_elbow);
     RUN_TEST(test_h75_has_bottom_edge);
+    RUN_TEST(test_keycopy_round_trip_kw1);
+    RUN_TEST(test_keycopy_rejects_unknown_format);
+    RUN_TEST(test_keycopy_rejects_short_bitting);
+    RUN_TEST(test_keycopy_name_rules);
+    RUN_TEST(test_settings_ini_round_trip);
+    RUN_TEST(test_settings_ini_rejects_non_positive);
     return UNITY_END();
 }
