@@ -5,6 +5,7 @@
 #include "key_geometry.h"
 #include "keycopy_io.h"
 #include "view_math.h"
+#include "model.h"
 
 static void fill_kw1_min(uint8_t* d) {
     for (int i = 0; i < 6; i++) d[i] = 1;
@@ -209,6 +210,29 @@ void test_measure_keys(void) {
     TEST_ASSERT_EQUAL_INT(MeasureAction_Back, measure_input_from_char('`').action);
 }
 
+void test_model_digit_respects_macs(void) {
+    KeyCopierModel m;
+    model_init(&m, 0);
+    MeasureInput in;
+    in.action = MeasureAction_SetDepth;
+    in.digit = 6;
+    model_apply_measure_input(&m, in);
+    TEST_ASSERT_EQUAL_UINT8(1, m.depth[0]);
+    in.digit = 5;
+    model_apply_measure_input(&m, in);
+    TEST_ASSERT_EQUAL_UINT8(5, m.depth[0]);
+}
+
+void test_model_pin_walk(void) {
+    KeyCopierModel m;
+    model_init(&m, 0);
+    MeasureInput in;
+    in.action = MeasureAction_PinNext;
+    in.digit = 0;
+    model_apply_measure_input(&m, in);
+    TEST_ASSERT_EQUAL_INT(1, m.pin_slc);
+}
+
 void test_h75_has_bottom_edge(void) {
     int hi = find_format_by_name("H75");
     uint8_t d[16];
@@ -254,5 +278,7 @@ int main(int argc, char** argv) {
     RUN_TEST(test_clamp_pan_long_key);
     RUN_TEST(test_autopan_brings_pin_on_screen);
     RUN_TEST(test_measure_keys);
+    RUN_TEST(test_model_digit_respects_macs);
+    RUN_TEST(test_model_pin_walk);
     return UNITY_END();
 }
