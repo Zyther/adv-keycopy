@@ -1,4 +1,5 @@
 #include <unity.h>
+#include <math.h>
 #include "key_formats.h"
 #include "key_geometry.h"
 
@@ -77,6 +78,51 @@ void test_macs_middle_pin_checks_both_neighbors(void) {
     TEST_ASSERT_FALSE(depth_change_allowed(all_formats[0], d, 1, 6));
 }
 
+static int count_near(const Segment* segs, int n, double x0, double y0, double x1, double y1) {
+    int c = 0;
+    for (int i = 0; i < n; i++) {
+        int match = (fabs(segs[i].x0 - x0) < 0.001 && fabs(segs[i].y0 - y0) < 0.001 &&
+                     fabs(segs[i].x1 - x1) < 0.001 && fabs(segs[i].y1 - y1) < 0.001);
+        int rev = (fabs(segs[i].x0 - x1) < 0.001 && fabs(segs[i].y0 - y1) < 0.001 &&
+                   fabs(segs[i].x1 - x0) < 0.001 && fabs(segs[i].y1 - y0) < 0.001);
+        if (match || rev) c++;
+    }
+    return c;
+}
+
+void test_pin_centers_kw1_sc4(void) {
+    TEST_ASSERT_DOUBLE_WITHIN(0.0001, 0.247, pin_center_inch(all_formats[0], 1));
+    TEST_ASSERT_DOUBLE_WITHIN(0.0001, 0.847, pin_center_inch(all_formats[0], 5));
+    TEST_ASSERT_DOUBLE_WITHIN(0.0001, 0.231, pin_center_inch(all_formats[1], 1));
+    TEST_ASSERT_DOUBLE_WITHIN(0.0001, 1.012, pin_center_inch(all_formats[1], 6));
+}
+
+void test_kw1_shoulder_and_elbow(void) {
+    uint8_t d[6] = {1, 1, 1, 1, 1, 1};
+    Segment segs[128];
+    int n = build_contour(all_formats[0], d, segs, 128);
+    TEST_ASSERT_TRUE(n > 4);
+    double half = 0.084 / 2.0;
+    TEST_ASSERT_TRUE(count_near(segs, n, 0.0, 0.0, 0.247 - half, 0.0) >= 1);
+    double level = 0.847 + 0.15;
+    TEST_ASSERT_TRUE(count_near(segs, n, 0.0, 0.329, level, 0.329) >= 1);
+    TEST_ASSERT_TRUE(count_near(segs, n, level, 0.329, level + 0.15, 0.329 - 0.15) >= 1);
+}
+
+void test_h75_has_bottom_edge(void) {
+    int hi = find_format_by_name("H75");
+    uint8_t d[16];
+    for (int i = 0; i < 16; i++) d[i] = (uint8_t)all_formats[hi].min_depth_ind;
+    Segment segs[256];
+    int n = build_contour(all_formats[hi], d, segs, 256);
+    int bottomish = 0;
+    double uncut = all_formats[hi].uncut_depth_inch;
+    for (int i = 0; i < n; i++) {
+        if (fabs(segs[i].y0 - uncut) < 0.002 && fabs(segs[i].y1 - uncut) < 0.002) bottomish++;
+    }
+    TEST_ASSERT_TRUE(bottomish >= 1);
+}
+
 void setUp(void) {}
 void tearDown(void) {}
 
@@ -94,5 +140,8 @@ int main(int argc, char** argv) {
     RUN_TEST(test_macs_allows_legal_first_pin);
     RUN_TEST(test_macs_rejects_illegal_adjacent);
     RUN_TEST(test_macs_middle_pin_checks_both_neighbors);
+    RUN_TEST(test_pin_centers_kw1_sc4);
+    RUN_TEST(test_kw1_shoulder_and_elbow);
+    RUN_TEST(test_h75_has_bottom_edge);
     return UNITY_END();
 }
