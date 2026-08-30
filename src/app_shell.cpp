@@ -636,7 +636,7 @@ static void dispatch(const Keyboard_Class::KeysState& status) {
                 break;
         }
     }
-    if (status.del && g_screen == Screen_Save) {
+    if ((status.backspace || status.del) && g_screen == Screen_Save) {
         handle_save_del();
     }
     for (auto c : status.word) {
