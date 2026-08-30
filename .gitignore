@@ -1,0 +1,40 @@
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+.clang_complete
+.gcc-flags.json
+
+# Build / flash artifacts
+*.elf
+*.bin
+*.hex
+*.map
+*.o
+*.a
+compile_commands.json
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test output
+test_results/
+.pytest_cache/
+
+# Python tooling (PlatformIO)
+__pycache__/
+*.pyc
+.python-version
+
+# Optional local secrets / machine paths
+.env
+.envrc
