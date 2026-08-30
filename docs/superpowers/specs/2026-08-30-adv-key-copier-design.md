@@ -30,7 +30,7 @@ The Adv panel is physically smaller. Long formats (SC4, Y2, B102, and others) an
 
 - True 1:1 overlay with pan when the key is larger than the panel. No scale-to-fit.
 - Measure input is type-first: digit sets the selected pin; arrows still change pin and nudge depth.
-- Files are Flipper-compatible `.keycopy` under `/sd/adv-keycopy/`.
+- Files are Flipper-compatible `.keycopy` under `/adv-keycopy` or `/sd/adv-keycopy` (folder `adv-keycopy` at the card root).
 - Physical pitch is hardcoded to the Adv default, with a Settings field to tweak and persist it.
 - QR/video instruction screen is dropped.
 
@@ -43,7 +43,7 @@ app_shell ──► measure_view ──► key_geometry ──► key_formats
     │              │
     │              └── model (format, depths, pin, pan, pitch)
     │
-    ├── keycopy_io ──► /sd/adv-keycopy/*.keycopy
+    ├── keycopy_io ──► /adv-keycopy/*.keycopy (or /sd/adv-keycopy)
     └── settings ────► SD file, or NVS if SD is missing
 ```
 
@@ -105,7 +105,7 @@ MACS and min/max depth: illegal digit or arrow is ignored. No clamp-to-illegal, 
 
 ### `keycopy_io`
 
-Directory: `/sd/adv-keycopy/`. Create it on first successful SD mount if missing.
+Directory: `/adv-keycopy` (fallback `/sd/adv-keycopy`). Create it on first successful SD mount if missing. The folder on the FAT volume is `adv-keycopy` at the card root.
 
 File shape matches Flipper Format v1 (same keys, same header string):
 
@@ -128,17 +128,17 @@ Unknown format, missing required fields, or a bitting string that is not exactly
 
 Owns `KeyCopierModel`: current format, `depth[]`, selected pin, pan, pitch, key name, `data_loaded`.
 
-Boot: init M5, try SD mount, load pitch from `/sd/adv-keycopy/settings.ini` if present else NVS else default, start at main menu. Initial format is KW1, all pins at `min_depth_ind`, pan at origin (shoulder at the left of the glass).
+Boot: init M5, try SD mount, load pitch from `settings.ini` in `/adv-keycopy` or `/sd/adv-keycopy` if present else NVS else default, start at main menu. Initial format is KW1, all pins at `min_depth_ind`, pan at origin (shoulder at the left of the glass).
 
 Menu items: Select Key Format, Measure, Save, Load, Settings, Help.
 
 Format pick: unique manufacturers → formats for that manufacturer → copy into model, reset depths, pin 1, pan origin, then go to Measure.
 
-Save: keyboard name prompt → write `/sd/adv-keycopy/<name>.keycopy`. Reject empty names and names that contain `/ \ : * ? " < > |` or are `.` / `..`. Stay on the prompt with a short error. Success returns to the menu. The folder name on the FAT volume is `adv-keycopy` at the card root (`/sd` is only the mount prefix).
+Save: keyboard name prompt → write `<name>.keycopy` into `/adv-keycopy` (or `/sd/adv-keycopy` if that is the mounted path). Reject empty names and names that contain `/ \ : * ? " < > |` or are `.` / `..`. Stay on the prompt with a short error. Success returns to the menu. The folder name on the FAT volume is `adv-keycopy` at the card root (`/sd` is only a mount prefix when present).
 
 Load: list `*.keycopy` in that folder (not the SD root). Pick one to apply.
 
-Settings: edit inches-per-pixel. Persist to `/sd/adv-keycopy/settings.ini` when SD is mounted; otherwise NVS. File contents are one line: `inches_per_px=0.004140`. Reject non-positive values; junk/missing falls back to `0.004140`.
+Settings: edit inches-per-pixel. Persist to `settings.ini` in `/adv-keycopy` or `/sd/adv-keycopy` when SD is mounted; otherwise NVS. File contents are one line: `inches_per_px=0.004140`. Reject non-positive values; junk/missing falls back to `0.004140`.
 
 Help: short scroll/text — place key on glass, align shoulder, set each pin, look with one eye closed. Point at the GitHub original and this repo. No QR widget.
 
@@ -178,14 +178,14 @@ Native PlatformIO env (or equivalent) links `key_geometry` and `keycopy_io` only
 
 ### On-device smoke
 
-Flash Adv → KW1 with a real key on the glass → digit then arrow on one pin → pan SC4 or B102 so the selected pin stays 1:1 on screen → save under `/sd/adv-keycopy/` → reload → tweak pitch in Settings and confirm the overlay moves → unmount/no-SD Save/Load shows `NO SD`.
+Flash Adv → KW1 with a real key on the glass → digit then arrow on one pin → pan SC4 or B102 so the selected pin stays 1:1 on screen → save under `/adv-keycopy` or `/sd/adv-keycopy` → reload → tweak pitch in Settings and confirm the overlay moves → unmount/no-SD Save/Load shows `NO SD`.
 
 ## Success criteria
 
 - All 23 Flipper 1.5 formats selectable.
 - Overlay is physically 1:1; overflow is pan, not scale.
 - Type-to-set depth with arrow fallback; MACS enforced.
-- Flipper-readable `.keycopy` files in `/sd/adv-keycopy/`.
+- Flipper-readable `.keycopy` files in `/adv-keycopy` or `/sd/adv-keycopy`.
 - Pitch default plus persisted Settings tweak.
 - Host tests above pass; on-device smoke passes.
 

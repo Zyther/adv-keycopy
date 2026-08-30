@@ -31,7 +31,7 @@ pio run -t upload
 
 ## First-time setup
 
-1. For save/load, format a microSD as FAT32, insert it, and power on. The app creates a folder named `adv-keycopy` at the card root the first time it mounts successfully. On a computer that folder is `adv-keycopy/`; on the Adv it is `/sd/adv-keycopy/`.
+1. For save/load, format a microSD as FAT32, insert it, and power on. The app creates a folder named `adv-keycopy` at the card root the first time it mounts successfully. On a computer that folder is `adv-keycopy/`. On the Adv the same folder is `/adv-keycopy` or `/sd/adv-keycopy`.
 2. Open **Measure** (or pick a format first). Leave **Settings** at the default pitch unless the outline is clearly the wrong size for a known key.
 
 ## Measure a key
@@ -75,7 +75,7 @@ Double-sided keys (Ford H75, Chevy B102, several motorcycle and RV blanks) draw 
 
 ### Save
 
-Type a name with the keyboard and press **Enter**. Files are stored as `adv-keycopy/<name>.keycopy` on the SD card (`/sd/adv-keycopy/` on the device).
+Type a name with the keyboard and press **Enter**. Files are stored as `adv-keycopy/<name>.keycopy` on the SD card (`/adv-keycopy` or `/sd/adv-keycopy` on the device).
 
 ## Save and load (Flipper-compatible)
 
@@ -94,7 +94,7 @@ Maximum Adjacent Cut Specification (MACS): 4
 Bitting Pattern: 1-2-3-4-5
 ```
 
-- **Location:** folder `adv-keycopy/` at the SD card root (device path `/sd/adv-keycopy/`). Not loose files on the card root.
+- **Location:** folder `adv-keycopy/` at the SD card root (device path `/adv-keycopy` or `/sd/adv-keycopy`). Not loose files on the card root.
 - **Load** only lists `*.keycopy` in that folder. A file that is not a Key Copier file, names an unknown format, or has the wrong number of depths is rejected; your current measurement is left alone.
 - **No SD card:** you can still measure. Save and Load show `NO SD` and do nothing else.
 
@@ -102,7 +102,7 @@ Bitting Pattern: 1-2-3-4-5
 
 **Settings** has one user control: **inches per pixel**.
 
-The Adv ships with `0.004140` (from the 1.14" / 240×135 panel). If a known blank does not line up — the shoulder fits but the last pin is short or long — change this number slightly and save. The value is stored in `/adv-keycopy/settings.ini` when an SD card is present, otherwise in on-chip NVS.
+The Adv ships with `0.004140` (from the 1.14" / 240×135 panel). If a known blank does not line up — the shoulder fits but the last pin is short or long — change this number slightly and save. The value is stored in `settings.ini` in that same folder (`/adv-keycopy` or `/sd/adv-keycopy`) when an SD card is present, otherwise in on-chip NVS.
 
 Do not use Settings to “zoom to fit.” That is the wrong tool; pan instead.
 
