@@ -76,6 +76,7 @@ static int g_fmt_idx[FORMAT_NUM];
 static int g_fmt_n;
 static char g_load_names[LOAD_MAX][32];
 static int g_load_n;
+static bool g_dirty;
 
 static bool nav_up(char c) {
     return c == ';' || c == ',';
@@ -97,6 +98,7 @@ static void show_alert(const char* msg, Screen ret) {
     g_alert_return = ret;
     g_alert_at = millis();
     g_screen = Screen_Alert;
+    g_dirty = true;
 }
 
 static bool sd_dir_exists(const char* path) {
@@ -564,7 +566,7 @@ static void handle_load_char(char c) {
 
 static void handle_load_enter() {
     if (g_load_n <= 0) return;
-    char buf[1024];
+    static char buf[1024];
     if (!read_keycopy(g_load_names[g_load_i], buf, sizeof(buf))) {
         show_alert("BAD FILE", Screen_Load);
         return;
@@ -639,6 +641,33 @@ static void dispatch(const Keyboard_Class::KeysState& status) {
     if ((status.backspace || status.del) && g_screen == Screen_Save) {
         handle_save_del();
     }
+    if (status.esc) {
+        switch (g_screen) {
+            case Screen_Mfr:
+                handle_mfr_char('`');
+                break;
+            case Screen_Format:
+                handle_format_char('`');
+                break;
+            case Screen_Measure:
+                handle_measure_char('`');
+                break;
+            case Screen_Save:
+                handle_save_char('`');
+                break;
+            case Screen_Load:
+                handle_load_char('`');
+                break;
+            case Screen_Settings:
+                handle_settings_char('`');
+                break;
+            case Screen_Help:
+                handle_help_char('`');
+                break;
+            default:
+                break;
+        }
+    }
     for (auto c : status.word) {
         switch (g_screen) {
             case Screen_Menu:
@@ -685,7 +714,9 @@ void app_setup() {
     build_mfr_list();
     g_menu_i = 0;
     g_screen = Screen_Menu;
+    g_dirty = true;
     draw_screen();
+    g_dirty = false;
 }
 
 void app_loop() {
@@ -698,18 +729,25 @@ void app_loop() {
     }
 
     if (g_screen == Screen_Alert) {
-        draw_alert();
         if ((millis() - g_alert_at) >= ALERT_MS || key_change) {
             g_screen = g_alert_return;
+            g_dirty = true;
+        }
+        if (g_dirty) {
             draw_screen();
+            g_dirty = false;
         }
         return;
     }
 
     if (key_change) {
         dispatch(status);
+        g_dirty = true;
     }
-    draw_screen();
+    if (g_dirty) {
+        draw_screen();
+        g_dirty = false;
+    }
 }
 
 #endif

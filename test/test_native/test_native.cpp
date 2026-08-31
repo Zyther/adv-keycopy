@@ -148,6 +148,23 @@ void test_keycopy_rejects_short_bitting(void) {
     TEST_ASSERT_FALSE(keycopy_parse(t, &idx, out, 8));
 }
 
+void test_keycopy_round_trip_depth_10(void) {
+    int s22 = find_format_by_name("S22");
+    TEST_ASSERT_TRUE(s22 >= 0);
+    TEST_ASSERT_EQUAL_INT(6, all_formats[s22].pin_num);
+    uint8_t in[6] = {10, 1, 2, 3, 4, 5};
+    char buf[512];
+    TEST_ASSERT_TRUE(keycopy_serialize(all_formats[s22], in, buf, sizeof(buf)));
+    TEST_ASSERT_NOT_NULL(strstr(buf, "Bitting Pattern: 10-1-2-3-4-5"));
+    int idx = -1;
+    uint8_t out[8] = {0};
+    TEST_ASSERT_TRUE(keycopy_parse(buf, &idx, out, 8));
+    TEST_ASSERT_EQUAL_INT(s22, idx);
+    TEST_ASSERT_EQUAL_UINT8(10, out[0]);
+    TEST_ASSERT_EQUAL_UINT8(1, out[1]);
+    TEST_ASSERT_EQUAL_UINT8(5, out[5]);
+}
+
 void test_keycopy_name_rules(void) {
     TEST_ASSERT_TRUE(keycopy_name_ok("house"));
     TEST_ASSERT_FALSE(keycopy_name_ok(""));
@@ -270,6 +287,7 @@ int main(int argc, char** argv) {
     RUN_TEST(test_keycopy_round_trip_kw1);
     RUN_TEST(test_keycopy_rejects_unknown_format);
     RUN_TEST(test_keycopy_rejects_short_bitting);
+    RUN_TEST(test_keycopy_round_trip_depth_10);
     RUN_TEST(test_keycopy_name_rules);
     RUN_TEST(test_settings_ini_round_trip);
     RUN_TEST(test_settings_ini_rejects_non_positive);

@@ -5,8 +5,8 @@
 
 void measure_view_draw(KeyCopierModel* m) {
     M5Cardputer.Display.fillScreen(TFT_BLACK);
-    Segment segs[256];
-    int n = build_contour(m->format, m->depth, segs, 256);
+    static Segment segs[128];
+    int n = build_contour(m->format, m->depth, segs, 128);
     for (int i = 0; i < n; i++) {
         Pixel a = world_to_screen(segs[i].x0, segs[i].y0, m->inches_per_px, ORIGIN_X, ORIGIN_Y,
                                   m->pan_x, m->pan_y);

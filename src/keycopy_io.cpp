@@ -65,17 +65,30 @@ static void strip_cr(char* s) {
 }
 
 static bool parse_bitting(const char* pattern, int pin_num, uint8_t* local_depths) {
-    int expected_len = 2 * pin_num - 1;
-    int len = (int)strlen(pattern);
-    if (len != expected_len) return false;
+    if (!pattern || pin_num <= 0) return false;
 
-    for (int i = 0; i < pin_num; i++) {
-        char d = pattern[i * 2];
-        if (d < '0' || d > '9') return false;
-        local_depths[i] = (uint8_t)(d - '0');
-        if (i < pin_num - 1 && pattern[i * 2 + 1] != '-') return false;
+    const char* p = pattern;
+    int count = 0;
+    while (*p) {
+        if (count >= pin_num) return false;
+        if (*p < '0' || *p > '9') return false;
+
+        unsigned val = 0;
+        while (*p >= '0' && *p <= '9') {
+            val = val * 10u + (unsigned)(*p - '0');
+            if (val > 255u) return false;
+            p++;
+        }
+        local_depths[count++] = (uint8_t)val;
+
+        if (*p == '-') {
+            p++;
+            if (*p == '\0') return false;
+        } else if (*p != '\0') {
+            return false;
+        }
     }
-    return true;
+    return count == pin_num;
 }
 
 bool keycopy_parse(const char* text, int* format_index, uint8_t* depths, int depths_cap) {
