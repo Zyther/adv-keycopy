@@ -1,0 +1,29 @@
+name: Firmware
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install PlatformIO
+        run: pip install -q platformio
+
+      - name: Build Cardputer-Adv firmware
+        run: pio run -e cardputer-adv
+
+      - name: Upload firmware.bin
+        uses: actions/upload-artifact@v4
+        with:
+          name: cardputer-adv-firmware
+          path: .pio/build/cardputer-adv/firmware.bin
+          if-no-files-found: error
