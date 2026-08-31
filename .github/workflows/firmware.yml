@@ -23,8 +23,8 @@ jobs:
       - name: Install PlatformIO
         run: pip install -q platformio
 
-      - name: Build Cardputer-Adv firmware
-        run: pio run -e cardputer-adv
+      - name: Build Cardputer firmware
+        run: pio run -e cardputer -e cardputer-adv
 
       - name: Next semver
         id: version
@@ -69,6 +69,8 @@ jobs:
 
       - name: Name firmware assets
         run: |
+          cp .pio/build/cardputer/firmware.bin \
+            "key-copier-cardputer-${{ steps.version.outputs.tag }}.bin"
           cp .pio/build/cardputer-adv/firmware.bin \
             "key-copier-adv-${{ steps.version.outputs.tag }}.bin"
 
@@ -79,6 +81,6 @@ jobs:
           name: ${{ steps.version.outputs.tag }}
           generate_release_notes: true
           files: |
-            .pio/build/cardputer-adv/firmware.bin
+            key-copier-cardputer-${{ steps.version.outputs.tag }}.bin
             key-copier-adv-${{ steps.version.outputs.tag }}.bin
           fail_on_unmatched_files: true

@@ -6,12 +6,12 @@ Use it on keys you own or are asked to duplicate lawfully. It does not cut keys 
 
 ## What you need
 
-- [M5Stack Cardputer-Adv](https://docs.m5stack.com/en/core/Cardputer-Adv) (K132-Adv)
+- [M5Stack Cardputer-Adv](https://docs.m5stack.com/en/core/Cardputer-Adv) (K132-Adv) or original [Cardputer](https://docs.m5stack.com/en/core/Cardputer) (K132 / v1.1)
 - USB-C cable
 - A microSD card if you want to save or load measurements (optional for measuring only)
 - [PlatformIO](https://platformio.org/) (CLI or the VS Code / Cursor extension) to build and flash
 
-The original Cardputer (non-Adv) is not the target. Keyboard and audio chips differ.
+M5Cardputer detects the keyboard at runtime (TCA8418 on Adv, matrix on original). Use the matching firmware from the GitHub Release: `key-copier-adv-vX.Y.Z.bin` or `key-copier-cardputer-vX.Y.Z.bin`.
 
 ## The small-screen catch
 
@@ -20,11 +20,12 @@ Flipper’s panel is about 1.25" wide. The Adv is about 1.00" wide. The outline 
 ## Flash the firmware
 
 1. Clone this repo and open it in PlatformIO.
-2. Put the Adv in download mode: set the side power switch to **OFF**, hold **G0** on the Stamp, switch power **ON**, then release G0.
-3. Upload:
+2. Put the device in download mode: set the side power switch to **OFF**, hold **G0** on the Stamp, switch power **ON**, then release G0.
+3. Upload the matching env (default is Adv):
 
 ```bash
-pio run -t upload
+pio run -e cardputer-adv -t upload
+pio run -e cardputer -t upload
 ```
 
 4. Power-cycle if the serial port does not come back. Charging only works with the side switch **ON**.
@@ -141,9 +142,10 @@ Format geometry (pin spacing, depth steps, MACS, drill angle) is copied from the
 ## Build from source
 
 ```bash
-pio run              # compile
-pio run -t upload    # flash (Adv in download mode)
-pio test             # host tests for geometry and .keycopy files
+pio run -e cardputer-adv   # Adv
+pio run -e cardputer       # original Cardputer
+pio run -e cardputer-adv -t upload
+pio test                   # host tests for geometry and .keycopy files
 ```
 
 See `docs/superpowers/specs/2026-08-30-adv-key-copier-design.md` for the implementer spec.
@@ -158,4 +160,4 @@ See `docs/superpowers/specs/2026-08-30-adv-key-copier-design.md` for the impleme
 ## Credits
 
 - Original Flipper app: [zinongli/KeyCopier](https://github.com/zinongli/KeyCopier) by Torron, MIT License, with formats and double-sided support from HonestLocksmith, Offreds, lightos, and RIcePatrol.
-- Hardware docs: [M5Stack Cardputer-Adv](https://docs.m5stack.com/en/core/Cardputer-Adv).
+- Hardware docs: [M5Stack Cardputer-Adv](https://docs.m5stack.com/en/core/Cardputer-Adv), [Cardputer](https://docs.m5stack.com/en/core/Cardputer).
