@@ -5,11 +5,16 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -21,9 +26,59 @@ jobs:
       - name: Build Cardputer-Adv firmware
         run: pio run -e cardputer-adv
 
-      - name: Upload firmware.bin
-        uses: actions/upload-artifact@v4
+      - name: Next semver
+        id: version
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+
+          latest="$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1 || true)"
+          if [ -z "${latest}" ]; then
+            tag="v1.0.0"
+            bump="initial"
+          else
+            ver="${latest#v}"
+            IFS=. read -r major minor patch <<< "${ver}"
+            log="$(git log "${latest}..HEAD" --pretty=%s)"
+            bump="patch"
+            if echo "${log}" | grep -qE 'BREAKING CHANGE|^(feat|fix|chore|docs|refactor|perf|test|ci|build)(\(.+\))?!:'; then
+              bump="major"
+            elif echo "${log}" | grep -qE '^feat(\(.+\))?:'; then
+              bump="minor"
+            fi
+            case "${bump}" in
+              major)
+                major=$((major + 1))
+                minor=0
+                patch=0
+                ;;
+              minor)
+                minor=$((minor + 1))
+                patch=0
+                ;;
+              patch)
+                patch=$((patch + 1))
+                ;;
+            esac
+            tag="v${major}.${minor}.${patch}"
+          fi
+
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+          echo "bump=${bump}" >> "${GITHUB_OUTPUT}"
+          echo "Next release ${tag} (${bump})"
+
+      - name: Name firmware assets
+        run: |
+          cp .pio/build/cardputer-adv/firmware.bin \
+            "key-copier-adv-${{ steps.version.outputs.tag }}.bin"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
         with:
-          name: cardputer-adv-firmware
-          path: .pio/build/cardputer-adv/firmware.bin
-          if-no-files-found: error
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          files: |
+            .pio/build/cardputer-adv/firmware.bin
+            key-copier-adv-${{ steps.version.outputs.tag }}.bin
+          fail_on_unmatched_files: true
