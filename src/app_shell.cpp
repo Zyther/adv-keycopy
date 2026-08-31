@@ -53,7 +53,7 @@ static const char* k_help[] = {
     ", . select pin",
     "- = [ ] pan",
     "One eye closed.",
-    "github.com/zinongli/KeyCopier",
+    "github.com/Zyther/adv-keycopy",
 };
 static const int k_help_n = 7;
 
