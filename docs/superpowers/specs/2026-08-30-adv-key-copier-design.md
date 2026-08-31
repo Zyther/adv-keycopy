@@ -89,9 +89,9 @@ Input (measure screen):
 | Key | Action |
 | --- | --- |
 | `←` or `,` | Previous pin |
-| `→` or `.` | Next pin |
+| `→` or `/` | Next pin |
 | `↑` or `;` | Shallower (decrease depth index) |
-| `↓` or `/` | Deeper (increase depth index) |
+| `↓` or `.` | Deeper (increase depth index) |
 | `0`–`9` | Set selected pin to that depth if in range and MACS allows |
 | `-` | Pan left |
 | `=` | Pan right |

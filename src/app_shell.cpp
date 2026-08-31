@@ -50,12 +50,13 @@ static const char* k_help[] = {
     "Place key on the glass.",
     "Align the shoulder.",
     "Type 0-9 to set a pin.",
-    ", . select pin",
+    ", / select pin",
+    "; . change depth",
     "- = [ ] pan",
     "One eye closed.",
     "github.com/Zyther/adv-keycopy",
 };
-static const int k_help_n = 7;
+static const int k_help_n = 8;
 
 static Screen g_screen;
 static Screen g_alert_return;
@@ -79,11 +80,11 @@ static int g_load_n;
 static bool g_dirty;
 
 static bool nav_up(char c) {
-    return c == ';' || c == ',';
+    return c == ';';
 }
 
 static bool nav_down(char c) {
-    return c == '/' || c == '.';
+    return c == '.';
 }
 
 static int clamp_i(int v, int lo, int hi) {
@@ -506,13 +507,13 @@ static void handle_measure_hid(const Keyboard_Class::KeysState& status) {
                 mapped = ',';
                 break;
             case HID_ARROW_RIGHT:
-                mapped = '.';
+                mapped = '/';
                 break;
             case HID_ARROW_UP:
                 mapped = ';';
                 break;
             case HID_ARROW_DOWN:
-                mapped = '/';
+                mapped = '.';
                 break;
             default:
                 break;
@@ -604,7 +605,7 @@ static void handle_help_char(char c) {
     int max_top = (k_help_n > LIST_VIS) ? k_help_n - LIST_VIS : 0;
     if (c == ';') {
         g_help_top = clamp_i(g_help_top - 1, 0, max_top);
-    } else if (c == '/') {
+    } else if (c == '.') {
         g_help_top = clamp_i(g_help_top + 1, 0, max_top);
     }
 }

@@ -217,9 +217,9 @@ void test_autopan_brings_pin_on_screen(void) {
 
 void test_measure_keys(void) {
     TEST_ASSERT_EQUAL_INT(MeasureAction_PinPrev, measure_input_from_char(',').action);
-    TEST_ASSERT_EQUAL_INT(MeasureAction_PinNext, measure_input_from_char('.').action);
+    TEST_ASSERT_EQUAL_INT(MeasureAction_PinNext, measure_input_from_char('/').action);
     TEST_ASSERT_EQUAL_INT(MeasureAction_Shallower, measure_input_from_char(';').action);
-    TEST_ASSERT_EQUAL_INT(MeasureAction_Deeper, measure_input_from_char('/').action);
+    TEST_ASSERT_EQUAL_INT(MeasureAction_Deeper, measure_input_from_char('.').action);
     MeasureInput s = measure_input_from_char('3');
     TEST_ASSERT_EQUAL_INT(MeasureAction_SetDepth, s.action);
     TEST_ASSERT_EQUAL_UINT8(3, s.digit);

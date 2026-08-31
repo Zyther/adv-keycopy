@@ -42,8 +42,8 @@ pio run -e cardputer -t upload
 3. Lay the key **on the screen**. Align the shoulder (or the tip, on tip-stopped car keys) with the drawn shoulder/stop.
 4. Close one eye so you are not looking around the glass.
 5. For each pin:
-   - `,` or **Left** / `.` or **Right** — select that pin.
-   - Type **0–9** to set the depth, or `;` / **Up** and `/` / **Down** to nudge.
+   - `,` or **Left** / `/` or **Right** — select that pin.
+   - Type **0–9** to set the depth, or `;` / **Up** and `.` / **Down** to nudge.
    - If that pin is off the screen, the view jumps to it. You can also pan with `-` `=` `[` `]`.
 6. When every cut matches the outline, **Save** if you have an SD card.
 
@@ -57,7 +57,8 @@ Double-sided keys (Ford H75, Chevy B102, several motorcycle and RV blanks) draw 
 
 | Key | Action |
 | --- | --- |
-| `;` / `,` / `.` / `/` or arrows | Move in lists and on the measure screen |
+| `;` / `.` or Up / Down | Move in lists |
+| `,` / `/` or Left / Right | Select pin on the measure screen |
 | **Enter** | Select |
 | **ESC** or `` ` `` | Back |
 
@@ -66,9 +67,9 @@ Double-sided keys (Ford H75, Chevy B102, several motorcycle and RV blanks) draw 
 | Key | Action |
 | --- | --- |
 | `,` or Left | Previous pin |
-| `.` or Right | Next pin |
+| `/` or Right | Next pin |
 | `;` or Up | Shallower cut |
-| `/` or Down | Deeper cut |
+| `.` or Down | Deeper cut |
 | `0`–`9` | Set the selected pin to that depth (if legal) |
 | `-` / `=` | Pan left / right |
 | `[` / `]` | Pan up / down |

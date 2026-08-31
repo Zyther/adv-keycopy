@@ -46,13 +46,13 @@ MeasureInput measure_input_from_char(char c) {
         case ',':
             out.action = MeasureAction_PinPrev;
             break;
-        case '.':
+        case '/':
             out.action = MeasureAction_PinNext;
             break;
         case ';':
             out.action = MeasureAction_Shallower;
             break;
-        case '/':
+        case '.':
             out.action = MeasureAction_Deeper;
             break;
         case '-':
